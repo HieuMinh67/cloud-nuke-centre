@@ -2,7 +2,10 @@ module github.com/beanlearninggo/hello
 
 go 1.19
 
-require github.com/rebuy-de/aws-nuke v2.10.0+incompatible
+require (
+	github.com/aws/aws-lambda-go v1.39.1
+	github.com/rebuy-de/aws-nuke v2.10.0+incompatible
+)
 
 require (
 	github.com/aws/aws-sdk-go v1.44.234 // indirect

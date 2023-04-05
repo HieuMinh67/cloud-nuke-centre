@@ -19,7 +19,11 @@ jobs:
 
       - name: Build binary
         shell: bash
-        run: go build -o bin/aws-nuke main.go
+        run: |
+          export GOOS=linux
+          export GOARCH=amd64
+          export CGO_ENABLED=0
+          go build -o bin/aws-nuke main.go
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
