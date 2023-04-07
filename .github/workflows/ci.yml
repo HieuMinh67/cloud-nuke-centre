@@ -24,6 +24,7 @@ jobs:
           export GOARCH=amd64
           export CGO_ENABLED=0
           go build -o bin/aws-nuke main.go
+          zip -jrm bin/aws-nuke.zip bin/aws-nuke
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -34,7 +35,7 @@ jobs:
 
       - name: Upload to S3
         shell: bash
-        run: aws s3 cp ./bin/aws-nuke s3://bean-training-build-nuke/aws-nuke
+        run: aws s3 cp ./bin/aws-nuke.zip s3://bean-training-build-nuke/aws-nuke.zip
 
 
 
