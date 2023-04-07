@@ -3,20 +3,19 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/rebuy-de/aws-nuke/cmd"
+	//"github.com/rebuy-de/aws-nuke/cmd"
+	"github.com/beanlearninggo/hello/cmd"
 )
-
-func handler(ctx context.Context) error {
+ 
+func HandleRequest(ctx context.Context) (string, error) {
 	fmt.Printf("Hello, world.")
 	if err := cmd.NewRootCommand().Execute(); err != nil {
-		os.Exit(-1)
+		return "", err
 	}
-	return nil
+	return "Hello, world.", nil
 }
 
 func main() {
-	lambda.Start(handler)
+	lambda.Start(HandleRequest)
 }

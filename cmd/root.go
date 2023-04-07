@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
+	origin "github.com/rebuy-de/aws-nuke/cmd"
 	"github.com/rebuy-de/aws-nuke/pkg/awsutil"
-	"github.com/rebuy-de/aws-nuke/pkg/config"
 	"github.com/rebuy-de/aws-nuke/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -13,7 +13,7 @@ import (
 
 func NewRootCommand() *cobra.Command {
 	var (
-		params  NukeParameters
+		params  origin.NukeParameters
 		creds   awsutil.Credentials
 		verbose bool
 	)
@@ -32,34 +32,36 @@ func NewRootCommand() *cobra.Command {
 	}
 
 	command.RunE = func(cmd *cobra.Command, args []string) error {
-		var err error
-
-		err = params.Validate()
-		if err != nil {
-			return err
-		}
-
-		err = creds.Validate()
-		if err != nil {
-			return err
-		}
-
-		command.SilenceUsage = true
-
-		account, err := awsutil.NewAccount(creds)
-		if err != nil {
-			return err
-		}
-
-		n := NewNuke(params, *account)
-
-		n.Config, err = config.Load(n.Parameters.ConfigPath)
-		if err != nil {
-			log.Error("Failed to parse config file.")
-			return err
-		}
-
-		return n.Run()
+		fmt.Println("Success")
+		return nil
+		//var err error
+		//
+		//err = params.Validate()
+		//if err != nil {
+		//	return err
+		//}
+		//
+		//err = creds.Validate()
+		//if err != nil {
+		//	return err
+		//}
+		//
+		//command.SilenceUsage = true
+		//
+		//account, err := awsutil.NewAccount(creds)
+		//if err != nil {
+		//	return err
+		//}
+		//
+		//n := origin.NewNuke(params, *account)
+		//
+		//n.Config, err = config.Load(n.Parameters.ConfigPath)
+		//if err != nil {
+		//	log.Error("Failed to parse config file.")
+		//	return err
+		//}
+		//
+		//return n.Run()
 	}
 
 	command.PersistentFlags().BoolVarP(
@@ -115,7 +117,7 @@ func NewRootCommand() *cobra.Command {
 		"If specified, the program will exit if resources are stuck in waiting for this many iterations. "+
 			"0 (default) disables early exit.")
 
-	command.AddCommand(NewVersionCommand())
+	command.AddCommand(origin.NewVersionCommand())
 	command.AddCommand(NewResourceTypesCommand())
 
 	return command
