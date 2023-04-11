@@ -54,6 +54,7 @@ func NewRootCommand() *cobra.Command {
 			Accounts: map[string]config.Account{
 				accountId: {},
 			},
+			AccountBlacklist: []string{accountId},
 			Regions: []string{
 				"global",
 				"us-east-2",
