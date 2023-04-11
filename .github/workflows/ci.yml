@@ -35,7 +35,7 @@ jobs:
 
       - name: Upload to S3
         shell: bash
-        run: aws s3 cp ./bin/aws-nuke.zip s3://bean-training-build-nuke/aws-nuke.zip
+        run: aws s3 cp ./bin/aws-nuke.zip s3://356077346614-us-west-2-aws-lambda/aws-nuke/builds/aws-nuke/latest.zip
 
 
 
