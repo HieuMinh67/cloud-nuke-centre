@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/rebuy-de/aws-nuke/pkg/config"
 	"sort"
 
 	origin "github.com/rebuy-de/aws-nuke/cmd"
@@ -13,9 +14,10 @@ import (
 
 func NewRootCommand() *cobra.Command {
 	var (
-		params  origin.NukeParameters
-		creds   awsutil.Credentials
-		verbose bool
+		accountId string
+		params    origin.NukeParameters
+		creds     awsutil.Credentials
+		verbose   bool
 	)
 
 	command := &cobra.Command{
@@ -32,36 +34,59 @@ func NewRootCommand() *cobra.Command {
 	}
 
 	command.RunE = func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Success")
-		return nil
-		//var err error
-		//
-		//err = params.Validate()
-		//if err != nil {
-		//	return err
-		//}
-		//
-		//err = creds.Validate()
-		//if err != nil {
-		//	return err
-		//}
-		//
-		//command.SilenceUsage = true
-		//
-		//account, err := awsutil.NewAccount(creds)
-		//if err != nil {
-		//	return err
-		//}
-		//
-		//n := origin.NewNuke(params, *account)
-		//
-		//n.Config, err = config.Load(n.Parameters.ConfigPath)
-		//if err != nil {
-		//	log.Error("Failed to parse config file.")
-		//	return err
-		//}
-		//
-		//return n.Run()
+		var err error
+
+		err = creds.Validate()
+		if err != nil {
+			return err
+		}
+
+		command.SilenceUsage = true
+
+		account, err := awsutil.NewAccount(creds)
+		if err != nil {
+			return err
+		}
+
+		n := origin.NewNuke(params, *account)
+
+		n.Config = &config.Nuke{
+			Accounts: map[string]config.Account{
+				accountId: {},
+			},
+			Regions: []string{
+				"global",
+				"us-east-2",
+				"us-east-1",
+				"us-west-1",
+				"us-west-2",
+				"af-south-1",
+				"ap-east-1",
+				"ap-south-2",
+				"ap-southeast-3",
+				"ap-southeast-4",
+				"ap-south-1",
+				"ap-northeast-3",
+				"ap-northeast-2",
+				"ap-southeast-1",
+				"ap-southeast-2",
+				"ap-northeast-1",
+				"ca-central-1",
+				"eu-central-1",
+				"eu-west-1",
+				"eu-west-2",
+				"eu-south-1",
+				"eu-west-3",
+				"eu-south-2",
+				"eu-north-1",
+				"eu-central-2",
+				"me-south-1",
+				"me-central-1",
+				"sa-east-1",
+			},
+		}
+
+		return n.Run()
 	}
 
 	command.PersistentFlags().BoolVarP(
@@ -91,6 +116,9 @@ func NewRootCommand() *cobra.Command {
 		"AWS session token for accessing the AWS API. "+
 			"Must be used together with --access-key-id and --secret-access-key. "+
 			"Cannot be used together with --profile.")
+	command.PersistentFlags().StringVar(
+		&accountId, "account-id", "",
+		"AWS account id that you want to run nuke on")
 
 	command.PersistentFlags().StringSliceVarP(
 		&params.Targets, "target", "t", []string{},
@@ -101,7 +129,7 @@ func NewRootCommand() *cobra.Command {
 		"Prevent nuking of certain resource types (eg IAMServerCertificate). "+
 			"This flag can be used multiple times.")
 	command.PersistentFlags().BoolVar(
-		&params.NoDryRun, "no-dry-run", false,
+		&params.NoDryRun, "no-dry-run", true,
 		"If specified, it actually deletes found resources. "+
 			"Otherwise it just lists all candidates.")
 	command.PersistentFlags().BoolVar(
