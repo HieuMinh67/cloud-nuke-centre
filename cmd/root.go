@@ -14,10 +14,11 @@ import (
 
 func NewRootCommand() *cobra.Command {
 	var (
-		accountId string
-		params    origin.NukeParameters
-		creds     awsutil.Credentials
-		verbose   bool
+		accountId   string
+		iamUsername string
+		params      origin.NukeParameters
+		creds       awsutil.Credentials
+		verbose     bool
 	)
 
 	command := &cobra.Command{
@@ -52,9 +53,20 @@ func NewRootCommand() *cobra.Command {
 
 		n.Config = &config.Nuke{
 			Accounts: map[string]config.Account{
-				accountId: {},
+				accountId: {
+					Filters: map[string][]config.Filter{
+						"IAMRole": {
+							config.NewExactFilter(iamUsername),
+						},
+						"IAMRolePolicyAttachment": {
+							config.NewExactFilter(fmt.Sprintf("%s -> AdministratorAccess", iamUsername)),
+						},
+						"IamUserAccessKeys": {
+							config.NewExactFilter(creds.AccessKeyID)},
+					},
+				},
 			},
-			AccountBlacklist: []string{accountId},
+			AccountBlacklist: []string{""},
 			Regions: []string{
 				"global",
 				"us-east-2",
@@ -120,6 +132,8 @@ func NewRootCommand() *cobra.Command {
 	command.PersistentFlags().StringVar(
 		&accountId, "account-id", "",
 		"AWS account id that you want to run nuke on")
+	command.PersistentFlags().StringVar(
+		&iamUsername, "iam-username", "", "")
 
 	command.PersistentFlags().StringSliceVarP(
 		&params.Targets, "target", "t", []string{},
@@ -134,7 +148,7 @@ func NewRootCommand() *cobra.Command {
 		"If specified, it actually deletes found resources. "+
 			"Otherwise it just lists all candidates.")
 	command.PersistentFlags().BoolVar(
-		&params.Force, "force", false,
+		&params.Force, "force", true,
 		"Don't ask for confirmation before deleting resources. "+
 			"Instead it waits 15s before continuing. Set --force-sleep to change the wait time.")
 	command.PersistentFlags().IntVar(

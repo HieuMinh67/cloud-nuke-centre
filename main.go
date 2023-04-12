@@ -9,9 +9,10 @@ import (
 )
 
 type NukeEvent struct {
-	AccountId string `json:"account_id"`
-	AccessKey string `json:"access_key"`
-	SecretKey string `json:"secret_key"`
+	AccountId   string `json:"account_id"`
+	IAMUsername string `json:"iam_username"`
+	AccessKey   string `json:"access_key"`
+	SecretKey   string `json:"secret_key"`
 }
 
 func HandleRequest(ctx context.Context, event NukeEvent) (string, error) {
@@ -21,6 +22,7 @@ func HandleRequest(ctx context.Context, event NukeEvent) (string, error) {
 	command := cmd.NewRootCommand()
 	command.SetArgs([]string{
 		"--account-id", event.AccountId,
+		"--iam-username", event.IAMUsername,
 		"--access-key-id", event.AccessKey,
 		"--secret-access-key", event.SecretKey,
 	})
