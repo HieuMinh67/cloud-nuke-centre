@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/aws/aws-lambda-go/lambda"
 	//"github.com/rebuy-de/aws-nuke/cmd"
 	"github.com/beanlearninggo/hello/cmd"
@@ -16,7 +15,6 @@ type NukeEvent struct {
 }
 
 func HandleRequest(ctx context.Context, event NukeEvent) (string, error) {
-	fmt.Printf("Hello, world.")
 	var err error
 
 	command := cmd.NewRootCommand()
@@ -29,7 +27,7 @@ func HandleRequest(ctx context.Context, event NukeEvent) (string, error) {
 	if err = command.Execute(); err != nil {
 		return "", err
 	}
-	return "Hello, world.", nil
+	return "Nuke complete", nil
 }
 
 func main() {
