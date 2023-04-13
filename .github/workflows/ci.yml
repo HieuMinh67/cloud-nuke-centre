@@ -1,0 +1,38 @@
+name: Build & Deploy
+
+on: [push]
+
+env:
+  GOOS: linux
+  GOARCH: amd64
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.19
+
+      - name: Build binary
+        shell: bash
+        run: |
+          export GOOS=linux
+          export GOARCH=amd64
+          export CGO_ENABLED=0
+          go build -o bin/aws-nuke main.go
+          zip -jrm bin/aws-nuke.zip bin/aws-nuke
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-west-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Upload to S3
+        shell: bash
+        run: aws s3 cp ./bin/aws-nuke.zip s3://${{ secrets.AWS_ACCOUNT_ID }}-${{ secrets.AWS_REGION }}-aws-lambda/aws-nuke/builds/aws-nuke/latest.zip
