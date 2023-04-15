@@ -55,13 +55,13 @@ func NewRootCommand() *cobra.Command {
 			Accounts: map[string]config.Account{
 				accountId: {
 					Filters: map[string][]config.Filter{
-						"IAMRole": {
+						"IAMUser": {
 							config.NewExactFilter(iamUsername),
 						},
-						"IAMRolePolicyAttachment": {
+						"IAMUserPolicyAttachment": {
 							config.NewExactFilter(fmt.Sprintf("%s -> AdministratorAccess", iamUsername)),
 						},
-						"IamUserAccessKeys": {
+						"IAMUserAccessKey": {
 							config.NewExactFilter(creds.AccessKeyID)},
 					},
 				},
@@ -152,7 +152,7 @@ func NewRootCommand() *cobra.Command {
 		"Don't ask for confirmation before deleting resources. "+
 			"Instead it waits 15s before continuing. Set --force-sleep to change the wait time.")
 	command.PersistentFlags().IntVar(
-		&params.ForceSleep, "force-sleep", 15,
+		&params.ForceSleep, "force-sleep", 3,
 		"If specified and --force is set, wait this many seconds before deleting resources. "+
 			"Defaults to 15.")
 	command.PersistentFlags().IntVar(
