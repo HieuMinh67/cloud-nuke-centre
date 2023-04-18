@@ -62,7 +62,8 @@ func NewRootCommand() *cobra.Command {
 							config.NewExactFilter(fmt.Sprintf("%s -> AdministratorAccess", iamUsername)),
 						},
 						"IAMUserAccessKey": {
-							config.NewExactFilter(creds.AccessKeyID)},
+							config.NewExactFilter(fmt.Sprintf("%s -> %s", iamUsername, creds.AccessKeyID)),
+						},
 					},
 				},
 			},
