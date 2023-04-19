@@ -12,13 +12,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type IamUsernameFilters []config.Filter
+type IamUsernames []string
+
+func (names IamUsernames) toIamUsernameFilters() IamUsernameFilters {
+	iamUsernameFilters := make(IamUsernameFilters, len(names))
+	for _, n := range names {
+		iamUsernameFilters = append(iamUsernameFilters, config.NewExactFilter(n))
+	}
+	return iamUsernameFilters
+}
+
 func NewRootCommand() *cobra.Command {
 	var (
-		accountId   string
-		iamUsername string
-		params      origin.NukeParameters
-		creds       awsutil.Credentials
-		verbose     bool
+		accountId    string
+		iamUsernames IamUsernames
+		params       origin.NukeParameters
+		creds        awsutil.Credentials
+		verbose      bool
 	)
 
 	command := &cobra.Command{
@@ -54,15 +65,15 @@ func NewRootCommand() *cobra.Command {
 		n.Config = &config.Nuke{
 			Accounts: map[string]config.Account{
 				accountId: {
-					Filters: map[string][]config.Filter{
+					Filters: config.Filters{
 						"IAMUser": {
-							config.NewExactFilter(iamUsername),
+							config.NewExactFilter("iamUsername"),
 						},
 						"IAMUserPolicyAttachment": {
-							config.NewExactFilter(fmt.Sprintf("%s -> AdministratorAccess", iamUsername)),
+							config.NewExactFilter(fmt.Sprintf("%s -> AdministratorAccess", iamUsernames)),
 						},
 						"IAMUserAccessKey": {
-							config.NewExactFilter(fmt.Sprintf("%s -> %s", iamUsername, creds.AccessKeyID)),
+							config.NewExactFilter(fmt.Sprintf("%s -> %s", iamUsernames, creds.AccessKeyID)),
 						},
 					},
 				},
@@ -134,7 +145,7 @@ func NewRootCommand() *cobra.Command {
 		&accountId, "account-id", "",
 		"AWS account id that you want to run nuke on")
 	command.PersistentFlags().StringVar(
-		&iamUsername, "iam-username", "", "")
+		&iamUsernames, "iam-username", "", "")
 
 	command.PersistentFlags().StringSliceVarP(
 		&params.Targets, "target", "t", []string{},
