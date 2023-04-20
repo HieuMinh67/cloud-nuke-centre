@@ -21,7 +21,10 @@ type AccessKey string
 func (names IamUsernames) toIamUsernameFilters() IamUsernameFilters {
 	filters := make(IamUsernameFilters, 0, len(names))
 	for _, n := range names {
-		filters = append(filters, config.NewExactFilter(n))
+		filters = append(filters, config.Filter{
+			Type:  config.FilterTypeGlob,
+			Value: n,
+		})
 	}
 	return filters
 }
@@ -29,7 +32,10 @@ func (names IamUsernames) toIamUsernameFilters() IamUsernameFilters {
 func (names IamUsernames) toIamUserPolicyAttachmentFilters() IamUserPolicyAttachmentFilters {
 	filters := make(IamUserPolicyAttachmentFilters, 0, len(names))
 	for _, n := range names {
-		filters = append(filters, config.NewExactFilter(fmt.Sprintf("%s -> AdministratorAccess", n)))
+		filters = append(filters, config.Filter{
+			Type:  config.FilterTypeGlob,
+			Value: fmt.Sprintf("%s -> AdministratorAccess", n),
+		})
 	}
 	return filters
 }
@@ -37,7 +43,10 @@ func (names IamUsernames) toIamUserPolicyAttachmentFilters() IamUserPolicyAttach
 func (names IamUsernames) toIamUserAccessKeyFilters() IamUserAccessKeyFilters {
 	filters := make(IamUserAccessKeyFilters, 0, len(names))
 	for _, n := range names {
-		filters = append(filters, config.NewExactFilter(fmt.Sprintf("%s -> *", n)))
+		filters = append(filters, config.Filter{
+			Type:  config.FilterTypeGlob,
+			Value: n,
+		})
 	}
 	return filters
 }
@@ -80,6 +89,10 @@ func NewRootCommand() *cobra.Command {
 		}
 
 		n := origin.NewNuke(params, *account)
+
+		fmt.Println(iamUsernames.toIamUsernameFilters())
+		fmt.Println(iamUsernames.toIamUserPolicyAttachmentFilters())
+		fmt.Println(iamUsernames.toIamUserAccessKeyFilters())
 
 		n.Config = &config.Nuke{
 			Accounts: map[string]config.Account{
