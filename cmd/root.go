@@ -144,8 +144,8 @@ func NewRootCommand() *cobra.Command {
 	command.PersistentFlags().StringVar(
 		&accountId, "account-id", "",
 		"AWS account id that you want to run nuke on")
-	command.PersistentFlags().StringVar(
-		&iamUsernames, "iam-username", "", "")
+	command.PersistentFlags().StringSliceVar(
+		(*[]string)(&iamUsernames), "iam-username", []string{}, "")
 
 	command.PersistentFlags().StringSliceVarP(
 		&params.Targets, "target", "t", []string{},
