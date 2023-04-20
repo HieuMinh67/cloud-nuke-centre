@@ -3,24 +3,43 @@ package cmd
 import (
 	"fmt"
 	"github.com/rebuy-de/aws-nuke/pkg/config"
+	"github.com/spf13/cobra"
 	"sort"
 
 	origin "github.com/rebuy-de/aws-nuke/cmd"
 	"github.com/rebuy-de/aws-nuke/pkg/awsutil"
 	"github.com/rebuy-de/aws-nuke/resources"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
 type IamUsernameFilters []config.Filter
+type IamUserPolicyAttachmentFilters []config.Filter
+type IamUserAccessKeyFilters []config.Filter
 type IamUsernames []string
+type AccessKey string
 
 func (names IamUsernames) toIamUsernameFilters() IamUsernameFilters {
-	iamUsernameFilters := make(IamUsernameFilters, len(names))
+	filters := make(IamUsernameFilters, 0, len(names))
 	for _, n := range names {
-		iamUsernameFilters = append(iamUsernameFilters, config.NewExactFilter(n))
+		filters = append(filters, config.NewExactFilter(n))
 	}
-	return iamUsernameFilters
+	return filters
+}
+
+func (names IamUsernames) toIamUserPolicyAttachmentFilters() IamUserPolicyAttachmentFilters {
+	filters := make(IamUserPolicyAttachmentFilters, 0, len(names))
+	for _, n := range names {
+		filters = append(filters, config.NewExactFilter(fmt.Sprintf("%s -> AdministratorAccess", n)))
+	}
+	return filters
+}
+
+func (names IamUsernames) toIamUserAccessKeyFilters() IamUserAccessKeyFilters {
+	filters := make(IamUserAccessKeyFilters, 0, len(names))
+	for _, n := range names {
+		filters = append(filters, config.NewExactFilter(fmt.Sprintf("%s -> *", n)))
+	}
+	return filters
 }
 
 func NewRootCommand() *cobra.Command {
@@ -66,15 +85,9 @@ func NewRootCommand() *cobra.Command {
 			Accounts: map[string]config.Account{
 				accountId: {
 					Filters: config.Filters{
-						"IAMUser": {
-							config.NewExactFilter("iamUsername"),
-						},
-						"IAMUserPolicyAttachment": {
-							config.NewExactFilter(fmt.Sprintf("%s -> AdministratorAccess", iamUsernames)),
-						},
-						"IAMUserAccessKey": {
-							config.NewExactFilter(fmt.Sprintf("%s -> %s", iamUsernames, creds.AccessKeyID)),
-						},
+						"IAMUser":                 iamUsernames.toIamUsernameFilters(),
+						"IAMUserPolicyAttachment": iamUsernames.toIamUserPolicyAttachmentFilters(),
+						"IAMUserAccessKey":        iamUsernames.toIamUserAccessKeyFilters(),
 					},
 				},
 			},
