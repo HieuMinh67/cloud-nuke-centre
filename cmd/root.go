@@ -3,22 +3,61 @@ package cmd
 import (
 	"fmt"
 	"github.com/rebuy-de/aws-nuke/pkg/config"
+	"github.com/spf13/cobra"
 	"sort"
 
 	origin "github.com/rebuy-de/aws-nuke/cmd"
 	"github.com/rebuy-de/aws-nuke/pkg/awsutil"
 	"github.com/rebuy-de/aws-nuke/resources"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
+
+type IamUsernameFilters []config.Filter
+type IamUserPolicyAttachmentFilters []config.Filter
+type IamUserAccessKeyFilters []config.Filter
+type IamUsernames []string
+type AccessKey string
+
+func (names IamUsernames) toIamUsernameFilters() IamUsernameFilters {
+	filters := make(IamUsernameFilters, 0, len(names))
+	for _, n := range names {
+		filters = append(filters, config.Filter{
+			Type:  config.FilterTypeGlob,
+			Value: n,
+		})
+	}
+	return filters
+}
+
+func (names IamUsernames) toIamUserPolicyAttachmentFilters() IamUserPolicyAttachmentFilters {
+	filters := make(IamUserPolicyAttachmentFilters, 0, len(names))
+	for _, n := range names {
+		filters = append(filters, config.Filter{
+			Type:  config.FilterTypeGlob,
+			Value: fmt.Sprintf("%s -> AdministratorAccess", n),
+		})
+	}
+	return filters
+}
+
+func (names IamUsernames) toIamUserAccessKeyFilters() IamUserAccessKeyFilters {
+	filters := make(IamUserAccessKeyFilters, 0, len(names))
+	for _, n := range names {
+		filters = append(filters, config.Filter{
+			Type:  config.FilterTypeGlob,
+			Value: n,
+		})
+	}
+	return filters
+}
 
 func NewRootCommand() *cobra.Command {
 	var (
-		accountId   string
-		iamUsername string
-		params      origin.NukeParameters
-		creds       awsutil.Credentials
-		verbose     bool
+		accountId    string
+		iamUsernames IamUsernames
+		params       origin.NukeParameters
+		creds        awsutil.Credentials
+		verbose      bool
 	)
 
 	command := &cobra.Command{
@@ -51,19 +90,17 @@ func NewRootCommand() *cobra.Command {
 
 		n := origin.NewNuke(params, *account)
 
+		fmt.Println(iamUsernames.toIamUsernameFilters())
+		fmt.Println(iamUsernames.toIamUserPolicyAttachmentFilters())
+		fmt.Println(iamUsernames.toIamUserAccessKeyFilters())
+
 		n.Config = &config.Nuke{
 			Accounts: map[string]config.Account{
 				accountId: {
-					Filters: map[string][]config.Filter{
-						"IAMUser": {
-							config.NewExactFilter(iamUsername),
-						},
-						"IAMUserPolicyAttachment": {
-							config.NewExactFilter(fmt.Sprintf("%s -> AdministratorAccess", iamUsername)),
-						},
-						"IAMUserAccessKey": {
-							config.NewExactFilter(fmt.Sprintf("%s -> %s", iamUsername, creds.AccessKeyID)),
-						},
+					Filters: config.Filters{
+						"IAMUser":                 iamUsernames.toIamUsernameFilters(),
+						"IAMUserPolicyAttachment": iamUsernames.toIamUserPolicyAttachmentFilters(),
+						"IAMUserAccessKey":        iamUsernames.toIamUserAccessKeyFilters(),
 					},
 				},
 			},
@@ -133,8 +170,8 @@ func NewRootCommand() *cobra.Command {
 	command.PersistentFlags().StringVar(
 		&accountId, "account-id", "",
 		"AWS account id that you want to run nuke on")
-	command.PersistentFlags().StringVar(
-		&iamUsername, "iam-username", "", "")
+	command.PersistentFlags().StringSliceVar(
+		(*[]string)(&iamUsernames), "iam-username", []string{}, "")
 
 	command.PersistentFlags().StringSliceVarP(
 		&params.Targets, "target", "t", []string{},
