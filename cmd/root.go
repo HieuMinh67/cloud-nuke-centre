@@ -44,8 +44,9 @@ func (names IamUsernames) toIamUserAccessKeyFilters() IamUserAccessKeyFilters {
 	filters := make(IamUserAccessKeyFilters, 0, len(names))
 	for _, n := range names {
 		filters = append(filters, config.Filter{
-			Type:  config.FilterTypeGlob,
-			Value: n,
+			Type:     config.FilterTypeGlob,
+			Property: "UserName",
+			Value:    n,
 		})
 	}
 	return filters
