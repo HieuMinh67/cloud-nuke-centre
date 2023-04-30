@@ -102,6 +102,12 @@ func NewRootCommand() *cobra.Command {
 						"IAMUser":                 iamUsernames.toIamUsernameFilters(),
 						"IAMUserPolicyAttachment": iamUsernames.toIamUserPolicyAttachmentFilters(),
 						"IAMUserAccessKey":        iamUsernames.toIamUserAccessKeyFilters(),
+						"EC2VPC": {
+							config.Filter{
+								Property: "IsDefault",
+								Value:    "true",
+							},
+						},
 					},
 				},
 			},
