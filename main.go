@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"github.com/aws/aws-lambda-go/lambda"
 	//"github.com/rebuy-de/aws-nuke/cmd"
 	"github.com/beanlearninggo/hello/cmd"
 )
@@ -14,7 +12,7 @@ type NukeEvent struct {
 	SecretKey   string `json:"secret_key"`
 }
 
-func HandleRequest(ctx context.Context, event NukeEvent) (string, error) {
+func HandleRequest(event NukeEvent) (string, error) {
 	var err error
 
 	command := cmd.NewRootCommand()
@@ -31,5 +29,12 @@ func HandleRequest(ctx context.Context, event NukeEvent) (string, error) {
 }
 
 func main() {
-	lambda.Start(HandleRequest)
+	HandleRequest(
+		NukeEvent{
+			AccountId:   "356077346614",
+			IAMUsername: "nukesurvivoradmin",
+			AccessKey:   "AKIAVFZ65D43LMRX6MSD",
+			SecretKey:   "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",
+		},
+	)
 }
